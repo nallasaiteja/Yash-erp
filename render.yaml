@@ -48,7 +48,7 @@ services:
         fromService:
           type: web
           name: yash-erp-api
-          property: host
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
 
 databases:
   - name: yash-erp-db
