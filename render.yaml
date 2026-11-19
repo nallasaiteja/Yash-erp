@@ -1,0 +1,37 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repo.
+# Plans start on "free" so nothing is charged. For a real permanent site, upgrade in the dashboard:
+#   web service -> Starter ($7/mo, no sleeping)   database -> Basic-256mb ($6/mo, free DB expires after 30 days)
+services:
+  - type: web
+    name: yash-power-tech-erp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: yash-erp-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STORAGE
+        value: db
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: MAX_UPLOAD_MB
+        value: "20"
+      - key: ADMIN_EMAIL
+        sync: false   # you type this when creating the Blueprint
+      - key: ADMIN_PASSWORD
+        sync: false   # you type this when creating the Blueprint (8+ characters)
+
+databases:
+  - name: yash-erp-db
+    databaseName: yash_erp
+    user: yash
+    plan: free
+    region: singapore
