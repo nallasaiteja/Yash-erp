@@ -1,17 +1,20 @@
-# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repo.
+# Render Blueprint (native runtimes, no Docker): Dashboard -> New -> Blueprint -> pick this repo.
 # Plans start on "free" so nothing is charged. For a real permanent site, upgrade in the dashboard:
-#   web service -> Starter ($7/mo, no sleeping)   database -> Basic-256mb ($6/mo, free DB expires after 30 days)
+#   web services -> Starter ($7/mo, no sleeping)   database -> Basic-256mb ($6/mo, free DB expires after 30 days)
 services:
   - type: web
-    name: yash-power-tech-erp
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    name: yash-erp-api
+    runtime: python
+    rootDir: backend
     plan: free
     region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.2"
       - key: DATABASE_URL
         fromDatabase:
           name: yash-erp-db
@@ -28,6 +31,24 @@ services:
         sync: false   # you type this when creating the Blueprint
       - key: ADMIN_PASSWORD
         sync: false   # you type this when creating the Blueprint (8+ characters)
+
+  - type: web
+    name: yash-power-tech-erp
+    runtime: node
+    rootDir: web
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: API_URL
+        fromService:
+          type: web
+          name: yash-erp-api
+          property: host
 
 databases:
   - name: yash-erp-db

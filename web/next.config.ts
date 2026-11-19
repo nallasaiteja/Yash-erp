@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
-const API = process.env.API_URL || "http://localhost:8000";
+const rawApi = process.env.API_URL || "http://localhost:8000";
+const API = rawApi.startsWith("http://") || rawApi.startsWith("https://") ? rawApi : `https://${rawApi}`;
 // STATIC_EXPORT=1 builds plain HTML/JS into web/out, served by the FastAPI app (one service on Render).
 const staticExport = process.env.STATIC_EXPORT === "1";
 
