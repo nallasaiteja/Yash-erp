@@ -56,8 +56,8 @@ export default function DepartmentsPage() {
   return (
     <>
       <PageHeader title="Departments" subtitle="Organisation structure" actions={can("departments:create") && <Button onClick={() => open("new")}><Plus className="size-4" /> Add department</Button>} />
-      <Card>
-        <Table head={["Code", "Department", "Head", "Employees", "Description"]} loading={list.loading && !list.data} empty={list.data?.length === 0}>
+      <Card className="overflow-hidden">
+        <Table head={["Code", "Department", "Head", "Employees", "Description"]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.length === 0}>
           {list.data?.map((d) => (
             <tr key={d.id} className="cursor-pointer hover:bg-surface-2" onClick={() => open(d)}>
               <Td className="font-mono text-xs">{d.code}</Td>

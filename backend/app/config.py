@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     upload_dir: str = "/data/uploads"
     max_upload_mb: int = 50
-    admin_email: str = "admin@yashpowertech.local"
+    admin_email: str = "admin@meruguglobal.com"
     admin_password: str = "Admin@12345"
 
 

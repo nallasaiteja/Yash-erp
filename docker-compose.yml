@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://yash:${POSTGRES_PASSWORD:-yash}@db:5432/yash_erp
       JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-0123456789abcdef}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@yashpowertech.local}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@meruguglobal.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
       UPLOAD_DIR: /data/uploads
     ports:

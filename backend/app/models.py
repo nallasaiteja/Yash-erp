@@ -51,6 +51,7 @@ class User(TimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     role: Mapped[Role] = relationship(lazy="joined")
 
@@ -182,3 +183,28 @@ class AuditLog(Base):
     ip_address: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False, index=True)
     user: Mapped[User | None] = relationship(lazy="joined")
+
+
+class Notification(TimestampMixin, Base):
+    __tablename__ = "notifications"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    priority: Mapped[str] = mapped_column(String(20), default="normal", nullable=False)  # normal|important|urgent
+    audience: Mapped[str] = mapped_column(String(20), default="all", nullable=False)  # all|selected
+    created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_by: Mapped[User] = relationship(foreign_keys=[created_by_id], lazy="joined")
+    recipients: Mapped[list["NotificationRecipient"]] = relationship(
+        back_populates="notification", cascade="all, delete-orphan", lazy="selectin"
+    )
+
+
+class NotificationRecipient(Base):
+    __tablename__ = "notification_recipients"
+    __table_args__ = (UniqueConstraint("notification_id", "user_id", name="uq_notification_recipient"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    notification_id: Mapped[int] = mapped_column(ForeignKey("notifications.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    notification: Mapped[Notification] = relationship(back_populates="recipients")
+    user: Mapped[User] = relationship(lazy="joined")

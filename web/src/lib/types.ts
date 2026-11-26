@@ -9,6 +9,7 @@ export type Me = {
   role: RoleBrief;
   permissions: string[];
   employee_id: number | null;
+  must_change_password?: boolean;
 };
 
 export type User = {
@@ -128,4 +129,18 @@ export type AuditEntry = {
   summary: string | null;
   ip_address: string | null;
   created_at: string;
+};
+
+export type NotificationItem = {
+  id: number;
+  title: string;
+  message: string;
+  priority: "normal" | "important" | "urgent";
+  audience: "all" | "selected";
+  created_by: UserBrief;
+  recipients: UserBrief[];
+  recipient_count: number;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
 };

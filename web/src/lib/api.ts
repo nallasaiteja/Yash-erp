@@ -28,6 +28,12 @@ function errorMessage(body: unknown, status: number): string {
         })
         .join("; ");
   }
+  if (status === 502 || status === 503 || status === 504) {
+    return "The server is waking up or temporarily unavailable. Please wait a moment and try again.";
+  }
+  if (status === 500) {
+    return "Something went wrong on the server. Please try again in a moment.";
+  }
   return `Request failed (${status})`;
 }
 
@@ -62,7 +68,12 @@ async function raw(path: string, init: RequestInit = {}, retry = true): Promise<
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type"))
     headers.set("Content-Type", "application/json");
-  const res = await fetch(path, { ...init, headers, credentials: "same-origin" });
+  let res: Response;
+  try {
+    res = await fetch(path, { ...init, headers, credentials: "same-origin" });
+  } catch {
+    throw new ApiError(0, "Unable to reach the server. Please check your internet connection and try again.");
+  }
   if (res.status === 401 && retry && !path.startsWith("/api/auth/")) {
     if (await refreshSession()) return raw(path, init, false);
     onAuthLost?.();

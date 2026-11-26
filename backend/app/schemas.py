@@ -28,6 +28,11 @@ class ChangePasswordIn(BaseModel):
     new_password: str = Field(min_length=8, max_length=200)
 
 
+class ProfileUpdateIn(BaseModel):
+    full_name: str = Field(min_length=2, max_length=120)
+    email: EmailStr
+
+
 class RoleBrief(ORM):
     id: int
     name: str
@@ -40,6 +45,7 @@ class Me(ORM):
     role: RoleBrief
     permissions: list[str]
     employee_id: int | None = None
+    must_change_password: bool = False
 
 
 class TokenOut(BaseModel):
@@ -320,3 +326,44 @@ class AuditOut(ORM):
     summary: str | None
     ip_address: str | None
     created_at: datetime
+
+
+# ---------- notifications ----------
+NotificationPriority = Literal["normal", "important", "urgent"]
+NotificationAudience = Literal["all", "selected"]
+
+
+class NotificationIn(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    message: str = Field(min_length=1, max_length=4000)
+    priority: NotificationPriority = "normal"
+    audience: NotificationAudience = "all"
+    recipient_ids: list[int] = []
+
+    @model_validator(mode="after")
+    def check_recipients(self):
+        if self.audience == "selected" and not self.recipient_ids:
+            raise ValueError("Select at least one recipient")
+        return self
+
+
+class NotificationPatch(BaseModel):
+    title: str | None = Field(None, min_length=2, max_length=200)
+    message: str | None = Field(None, min_length=1, max_length=4000)
+    priority: NotificationPriority | None = None
+    audience: NotificationAudience | None = None
+    recipient_ids: list[int] | None = None
+
+
+class NotificationOut(ORM):
+    id: int
+    title: str
+    message: str
+    priority: str
+    audience: str
+    created_by: UserBrief
+    recipients: list[UserBrief] = []
+    recipient_count: int = 0
+    is_read: bool = False
+    created_at: datetime
+    updated_at: datetime

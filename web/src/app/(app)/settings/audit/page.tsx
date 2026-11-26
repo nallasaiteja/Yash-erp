@@ -21,7 +21,7 @@ export default function AuditPage() {
             {ENTITIES.map((e) => <option key={e} value={e}>{e}</option>)}
           </Select>
         </div>
-        <Table head={["When", "User", "Action", "Area", "Details", "IP"]} loading={list.loading && !list.data} empty={list.data?.items.length === 0}>
+        <Table head={["When", "User", "Action", "Area", "Details", "IP"]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((a) => (
             <tr key={a.id}>
               <Td className="whitespace-nowrap text-muted">{fmtDateTime(a.created_at)}</Td>

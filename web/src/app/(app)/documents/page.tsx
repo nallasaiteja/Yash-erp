@@ -109,7 +109,7 @@ export default function DocumentsPage() {
           </Select>
           <Input className="w-40" placeholder="Tag" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} />
         </div>
-        <Table head={["Document", "Category", "Tags", "Size", "Uploaded by", "Date", ""]} loading={list.loading && !list.data} empty={list.data?.items.length === 0}>
+        <Table head={["Document", "Category", "Tags", "Size", "Uploaded by", "Date", ""]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((d) => (
             <tr key={d.id} className="hover:bg-surface-2">
               <Td>
@@ -185,7 +185,7 @@ export default function DocumentsPage() {
               <div className="mt-1">Uploaded by {detail.uploaded_by.full_name} on {fmtDate(detail.created_at)}</div>
             </div>
             {dupes.length > 0 && (
-              <div className="flex items-start gap-2 rounded-md bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
                 <Copy className="mt-0.5 size-4 shrink-0" />
                 <span>Identical file also stored as: {dupes.map((d) => d.title).join(", ")}</span>
               </div>

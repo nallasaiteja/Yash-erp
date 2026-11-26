@@ -56,7 +56,7 @@ export default function UsersPage() {
             <Input className="pl-9" placeholder="Search name or email" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
           </div>
         </div>
-        <Table head={["Name", "Email", "Role", "Status", "Last login"]} loading={list.loading && !list.data} empty={list.data?.items.length === 0}>
+        <Table head={["Name", "Email", "Role", "Status", "Last login"]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((u) => (
             <tr key={u.id} className="cursor-pointer hover:bg-surface-2" onClick={() => open(u)}>
               <Td className="font-medium">{u.full_name}</Td>

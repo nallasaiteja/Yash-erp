@@ -11,8 +11,14 @@ import { Badge, Button, Card, Field, Input, Modal, PageHeader, Pager, Select, Ta
 type ReportRow = {
   employee_id: number; employee_code: string; full_name: string; department: string | null;
   present: number; wfh: number; half_day: number; leave: number; absent: number; holiday: number;
-  effective_days: number; working_days: number; attendance_pct: number;
+  total_hours: number; effective_days: number; working_days: number; attendance_pct: number;
 };
+
+function fmtHours(h: number | null | undefined): string {
+  if (h == null) return "—";
+  const mins = Math.max(0, Math.round(h * 60));
+  return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;
+}
 
 const monthAgo = () => {
   const d = new Date();
@@ -76,7 +82,7 @@ export default function AttendancePage() {
       {isHR && (
         <div className="mb-3 flex gap-1 border-b border-line" role="tablist">
           {(["log", "report"] as const).map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === t ? "border-brand text-ink dark:border-accent" : "border-transparent text-muted hover:text-ink"}`}>
+            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === t ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}>
               {t === "log" ? "Daily log" : "Monthly report"}
             </button>
           ))}
@@ -84,8 +90,8 @@ export default function AttendancePage() {
       )}
 
       {tab === "log" ? (
-        <Card>
-          <div className="flex flex-wrap items-end gap-2 border-b border-line p-3">
+        <Card className="overflow-hidden">
+          <div className="flex flex-wrap items-end gap-3 border-b border-line bg-surface-2/35 p-3.5">
             <Field label="From"><Input type="date" value={start} onChange={(e) => { setStart(e.target.value); setPage(1); }} /></Field>
             <Field label="To"><Input type="date" value={end} onChange={(e) => { setEnd(e.target.value); setPage(1); }} /></Field>
             {isHR && (
@@ -105,7 +111,7 @@ export default function AttendancePage() {
               </>
             )}
           </div>
-          <Table head={["Date", "Employee", "Status", "In", "Out", "Hours", "Source", "Notes", ""]} loading={log.loading && !log.data} empty={log.data?.items.length === 0}>
+          <Table head={["Date", "Employee", "Status", "In", "Out", "Hours", "Source", "Notes", ""]} loading={log.loading && !log.data} error={log.error} onRetry={log.reload} empty={log.data?.items.length === 0}>
             {log.data?.items.map((a) => (
               <tr key={a.id}>
                 <Td>{fmtDate(a.work_date)}</Td>
@@ -113,7 +119,18 @@ export default function AttendancePage() {
                 <Td><Badge>{a.status}</Badge></Td>
                 <Td className="tabular-nums">{fmtTime(a.check_in)}</Td>
                 <Td className="tabular-nums">{fmtTime(a.check_out)}</Td>
-                <Td className="tabular-nums">{a.hours ?? "—"}</Td>
+                <Td className="tabular-nums">
+                  {a.hours != null ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="font-medium">{fmtHours(a.hours)}</span>
+                      {a.hours < 8 && (
+                        <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-warn ring-1 ring-amber-600/20">
+                          &lt; 8h
+                        </span>
+                      )}
+                    </span>
+                  ) : "—"}
+                </Td>
                 <Td className="text-muted">{a.source}</Td>
                 <Td className="max-w-[200px] truncate text-muted">{a.notes}</Td>
                 <Td>{can("attendance:edit") && <Button size="sm" variant="ghost" onClick={() => openManual(a)} aria-label="Edit"><Pencil className="size-4" /></Button>}</Td>
@@ -123,8 +140,8 @@ export default function AttendancePage() {
           {log.data && <Pager page={page} size={50} total={log.data.total} onPage={setPage} />}
         </Card>
       ) : (
-        <Card>
-          <div className="flex flex-wrap items-end gap-2 border-b border-line p-3">
+        <Card className="overflow-hidden">
+          <div className="flex flex-wrap items-end gap-3 border-b border-line bg-surface-2/35 p-3.5">
             <Field label="Month"><Input type="month" value={ym} onChange={(e) => setYm(e.target.value)} /></Field>
             <Field label="Department">
               <Select value={dept} onChange={(e) => setDept(e.target.value)}>
@@ -140,13 +157,15 @@ export default function AttendancePage() {
             )}
           </div>
           <p className="px-4 pt-3 text-xs text-muted">{report.data?.working_days ?? "…"} working days (Mon–Sat). Effective days = present + WFH + ½ × half days.</p>
-          <Table head={["Code", "Employee", "Department", "Present", "WFH", "Half", "Leave", "Absent", "Effective", "%"]} loading={report.loading} empty={report.data?.rows.length === 0}>
+          <Table head={["Code", "Employee", "Department", "Present", "WFH", "Half", "Leave", "Absent", "Total hours", "Effective", "%"]} loading={report.loading} error={report.error} onRetry={report.reload} empty={report.data?.rows.length === 0}>
             {report.data?.rows.map((r) => (
               <tr key={r.employee_id}>
                 <Td className="font-mono text-xs">{r.employee_code}</Td>
                 <Td>{r.full_name}</Td>
                 <Td className="text-muted">{r.department ?? "—"}</Td>
-                {[r.present, r.wfh, r.half_day, r.leave, r.absent, r.effective_days].map((v, i) => <Td key={i} className="tabular-nums">{v}</Td>)}
+                {[r.present, r.wfh, r.half_day, r.leave, r.absent].map((v, i) => <Td key={i} className="tabular-nums">{v}</Td>)}
+                <Td className="tabular-nums font-medium">{fmtHours(r.total_hours)}</Td>
+                <Td className="tabular-nums">{r.effective_days}</Td>
                 <Td className={`tabular-nums font-medium ${r.attendance_pct < 75 ? "text-danger" : ""}`}>{r.attendance_pct}%</Td>
               </tr>
             ))}

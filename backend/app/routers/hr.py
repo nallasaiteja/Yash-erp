@@ -195,10 +195,14 @@ def delete_employee(emp_id: int, request: Request, user: User = Depends(require(
 
 
 # ================= attendance =================
+def _utc(dt: datetime) -> datetime:
+    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+
+
 def _att_out(a: Attendance) -> AttendanceOut:
     o = AttendanceOut.model_validate(a)
     if a.check_in and a.check_out:
-        o.hours = round((a.check_out - a.check_in).total_seconds() / 3600, 2)
+        o.hours = round((_utc(a.check_out) - _utc(a.check_in)).total_seconds() / 3600, 2)
     return o
 
 
@@ -237,7 +241,9 @@ def check_out(request: Request, user: User = Depends(get_current_user), db: Sess
     if a.check_out:
         raise HTTPException(400, "Already checked out today")
     a.check_out = datetime.now(timezone.utc)
-    audit(db, user, "check_out", "attendance", emp.id, request=request)
+    worked = round((_utc(a.check_out) - _utc(a.check_in)).total_seconds() / 3600, 2)
+    summary = f"Checked out ({worked:.2f}h worked)" if worked >= 8 else f"Checked out early ({worked:.2f}h worked, < 8h)"
+    audit(db, user, "check_out", "attendance", emp.id, summary, request=request)
     db.commit()
     db.refresh(a)
     return _att_out(a)
@@ -307,6 +313,13 @@ def monthly_report(year: int, month: int = Query(ge=1, le=12), department_id: in
     agg: dict[int, dict[str, int]] = {}
     for eid, st, n in rows:
         agg.setdefault(eid, {})[st] = n
+    time_rows = db.execute(
+        select(Attendance.employee_id, Attendance.check_in, Attendance.check_out)
+        .where(Attendance.work_date.between(start, end), Attendance.check_in.is_not(None), Attendance.check_out.is_not(None))
+    ).all()
+    hours_by_emp: dict[int, float] = {}
+    for eid, ci, co in time_rows:
+        hours_by_emp[eid] = hours_by_emp.get(eid, 0.0) + max(0.0, (_utc(co) - _utc(ci)).total_seconds() / 3600)
     report = []
     for e in emps:
         s = agg.get(e.id, {})
@@ -316,6 +329,7 @@ def monthly_report(year: int, month: int = Query(ge=1, le=12), department_id: in
             "department": e.department.name if e.department else None,
             "present": s.get("present", 0), "wfh": s.get("wfh", 0), "half_day": s.get("half_day", 0),
             "leave": s.get("leave", 0), "absent": s.get("absent", 0), "holiday": s.get("holiday", 0),
+            "total_hours": round(hours_by_emp.get(e.id, 0.0), 2),
             "effective_days": present, "working_days": working_days,
             "attendance_pct": round(100 * present / working_days, 1) if working_days else 0,
         })

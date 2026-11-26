@@ -107,7 +107,7 @@ def create_user(body: UserCreate, request: Request, actor: User = Depends(requir
         raise HTTPException(409, "A user with this email already exists")
     db.get(Role, body.role_id) or _404("Role")
     u = User(email=email, full_name=body.full_name, password_hash=hash_password(body.password),
-             role_id=body.role_id, is_active=body.is_active)
+             role_id=body.role_id, is_active=body.is_active, must_change_password=True)
     db.add(u)
     db.flush()
     audit(db, actor, "create", "user", u.id, f"Created user {email}", request)
@@ -139,6 +139,7 @@ def update_user(user_id: int, body: UserUpdate, request: Request, actor: User = 
         changes.append("active" if body.is_active else "deactivated")
     if body.password:
         u.password_hash = hash_password(body.password)
+        u.must_change_password = True
         revoke = True
         changes.append("password reset")
     if revoke:

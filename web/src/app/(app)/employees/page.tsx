@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { Download, Plus, Search } from "lucide-react";
-import { download, post, put, del, qs } from "@/lib/api";
+import { download, patch, post, put, del, qs } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useData } from "@/lib/useData";
-import type { Department, EmpBrief, Employee, Page, UserBrief } from "@/lib/types";
+import type { Department, EmpBrief, Employee, Page, Role, UserBrief } from "@/lib/types";
 import { Badge, Button, Card, Field, Input, Modal, PageHeader, Pager, Select, Table, Td, Textarea, fmtDate, useToast } from "@/components/ui";
 
 const EMPTY = {
@@ -25,12 +25,19 @@ export default function EmployeesPage() {
   const depts = useData<Department[]>("/api/departments");
   const emps = useData<EmpBrief[]>("/api/employees/lookup");
   const users = useData<UserBrief[]>("/api/users/lookup");
+  const roles = useData<Role[]>("/api/roles");
   const [editing, setEditing] = useState<Employee | null | "new">(null);
   const [form, setForm] = useState<Form>(EMPTY);
+  const [createLogin, setCreateLogin] = useState(false);
+  const [loginRoleId, setLoginRoleId] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   const open = (e: Employee | "new") => {
     setEditing(e);
+    setCreateLogin(false);
+    setLoginRoleId(String(roles.data?.find((r) => r.name === "Employee")?.id ?? roles.data?.[0]?.id ?? ""));
+    setLoginPassword("");
     setForm(
       e === "new"
         ? EMPTY
@@ -43,10 +50,26 @@ export default function EmployeesPage() {
   async function save(ev: React.FormEvent) {
     ev.preventDefault();
     setBusy(true);
-    const body = Object.fromEntries(
+    const body: Record<string, unknown> = Object.fromEntries(
       Object.entries(form).map(([k, v]) => [k, v === "" ? null : ["department_id", "manager_id", "user_id"].includes(k) ? Number(v) : v]),
     );
     try {
+      if (editing === "new" && createLogin && !form.user_id) {
+        if (!form.email.trim()) throw new Error("Email is required to create a login account");
+        if (loginPassword.length < 8) throw new Error("Login password must be at least 8 characters");
+        const createdUser = await post<{ id: number }>("/api/users", {
+          email: form.email.trim(),
+          full_name: form.full_name.trim(),
+          password: loginPassword,
+          role_id: Number(loginRoleId),
+          is_active: true,
+        });
+        body.user_id = createdUser.id;
+        users.reload();
+      } else if (editing !== "new" && editing && form.user_id && loginPassword) {
+        if (loginPassword.length < 8) throw new Error("New login password must be at least 8 characters");
+        await patch(`/api/users/${Number(form.user_id)}`, { password: loginPassword });
+      }
       if (editing === "new") await post("/api/employees", body);
       else if (editing) await put(`/api/employees/${editing.id}`, body);
       toast("Employee saved");
@@ -91,8 +114,8 @@ export default function EmployeesPage() {
           </>
         }
       />
-      <Card>
-        <div className="flex flex-wrap gap-2 border-b border-line p-3">
+      <Card className="overflow-hidden">
+        <div className="flex flex-wrap gap-2.5 border-b border-line bg-surface-2/35 p-3.5">
           <div className="relative min-w-[200px] flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
             <Input className="pl-9" placeholder="Search name, code, email, designation" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
@@ -106,7 +129,7 @@ export default function EmployeesPage() {
             {["onboarding", "active", "on_notice", "exited"].map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
           </Select>
         </div>
-        <Table head={["Code", "Name", "Designation", "Department", "Phone", "Joined", "Status"]} loading={list.loading && !list.data} empty={list.data?.items.length === 0}>
+        <Table head={["Code", "Name", "Designation", "Department", "Phone", "Joined", "Status"]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((e) => (
             <tr key={e.id} className="cursor-pointer hover:bg-surface-2" onClick={() => open(e)}>
               <Td className="font-mono text-xs">{e.employee_code}</Td>
@@ -162,6 +185,33 @@ export default function EmployeesPage() {
             <Field label={`Date of exit${form.status === "exited" ? " *" : ""}`}><Input type="date" value={form.date_of_exit} onChange={set("date_of_exit")} required={form.status === "exited"} /></Field>
             <Field label="Emergency contact"><Input value={form.emergency_contact} onChange={set("emergency_contact")} /></Field>
             <div className="sm:col-span-2"><Field label="Address"><Textarea value={form.address} onChange={set("address")} /></Field></div>
+            {editing === "new" && can("users:create") && !form.user_id && (
+              <div className="sm:col-span-2 rounded-md border border-line bg-surface-2/50 p-3 space-y-3">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <input type="checkbox" checked={createLogin} onChange={(e) => setCreateLogin(e.target.checked)} />
+                  Create login account for this employee
+                </label>
+                {createLogin && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Login role *">
+                      <Select value={loginRoleId} onChange={(e) => setLoginRoleId(e.target.value)} required>
+                        {roles.data?.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                      </Select>
+                    </Field>
+                    <Field label="Initial password *" hint="At least 8 characters (uses employee email)">
+                      <Input type="password" minLength={8} required value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            )}
+            {editing !== "new" && form.user_id && can("users:edit") && (
+              <div className="sm:col-span-2">
+                <Field label="Reset login password" hint="Leave blank to keep the current password (min 8 characters)">
+                  <Input type="password" minLength={8} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="New password for linked login" />
+                </Field>
+              </div>
+            )}
           </fieldset>
           <div className="mt-5 flex justify-between gap-2">
             <div>{editing !== "new" && can("employees:delete") && <Button type="button" variant="danger" onClick={remove}>Delete</Button>}</div>

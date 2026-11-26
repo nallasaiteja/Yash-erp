@@ -8,6 +8,7 @@ type AuthState = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (u: Me) => void;
   can: (perm: string) => boolean;
 };
 
@@ -49,9 +50,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateUser = useCallback((u: Me) => {
+    setSessionUser(u);
+    setUser(u);
+  }, []);
+
   const can = useCallback((perm: string) => !!user?.permissions.includes(perm), [user]);
 
-  return <Ctx.Provider value={{ user, loading, login, logout, can }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, loading, login, logout, updateUser, can }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {

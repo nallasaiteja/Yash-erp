@@ -97,7 +97,7 @@ export default function TasksPage() {
           </Select>
           <label className="flex items-center gap-2 text-sm text-muted"><input type="checkbox" checked={overdue} onChange={(e) => { setOverdue(e.target.checked); setPage(1); }} /> Overdue only</label>
         </div>
-        <Table head={["Task", "Assignee", "Priority", "Due", "Status", "Created by"]} loading={list.loading && !list.data} empty={list.data?.items.length === 0}>
+        <Table head={["Task", "Assignee", "Priority", "Due", "Status", "Created by"]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((t) => (
             <tr key={t.id} className="hover:bg-surface-2">
               <Td>

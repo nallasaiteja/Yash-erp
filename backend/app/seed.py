@@ -33,6 +33,8 @@ def run() -> None:
                             permissions=[existing[c] for c in sorted(set(codes))]))
             elif name == "Super Administrator":
                 role.permissions = [existing[c] for c in ALL]  # always keep full access
+            elif name != "External Vendor" and not any(p.module == "notifications" for p in role.permissions):
+                role.permissions.append(existing["notifications:view"])
         db.flush()
 
         if not db.scalar(select(User).limit(1)):

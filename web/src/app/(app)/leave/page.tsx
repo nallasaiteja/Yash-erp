@@ -88,7 +88,7 @@ export default function LeavePage() {
             {["pending", "approved", "rejected", "cancelled"].map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
         </div>
-        <Table head={["Employee", "Type", "From", "To", "Days", "Reason", "Status", ""]} loading={list.loading && !list.data} empty={list.data?.items.length === 0}>
+        <Table head={["Employee", "Type", "From", "To", "Days", "Reason", "Status", ""]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((l) => (
             <tr key={l.id}>
               <Td className="font-medium">{l.employee.full_name}</Td>

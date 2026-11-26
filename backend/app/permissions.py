@@ -10,6 +10,7 @@ MODULES: dict[str, list[str]] = {
     "leave": ["view", "approve"],
     "tasks": ["view", "create", "edit", "delete"],
     "documents": ["view", "create", "edit", "delete", "download"],
+    "notifications": ["view", "create", "edit", "delete"],
     "audit": ["view"],
 }
 
@@ -25,13 +26,14 @@ def _mod(*modules: str, actions: tuple[str, ...] | None = None) -> list[str]:
     return out
 
 
-_BASE = ["dashboard:view", "tasks:create", "documents:view", "documents:download", "departments:view"]
+_BASE = ["dashboard:view", "tasks:create", "documents:view", "documents:download", "departments:view", "notifications:view"]
 _MANAGER = _BASE + _mod("employees", actions=("view",)) + _mod("tasks") + ["documents:create", "attendance:view", "leave:view", "leave:approve"]
+_NOTIF_ADMIN = ("notifications:create", "notifications:edit", "notifications:delete")
 
 DEFAULT_ROLES: dict[str, tuple[str, list[str]]] = {
     "Super Administrator": ("Full access to every module and setting", ALL),
-    "Managing Director": ("Company-wide visibility and approvals", [p for p in ALL if p not in ("roles:edit",)]),
-    "Director": ("Company-wide visibility and approvals", [p for p in ALL if not p.startswith(("roles:", "users:delete"))]),
+    "Managing Director": ("Company-wide visibility and approvals", [p for p in ALL if p not in ("roles:edit", *_NOTIF_ADMIN)]),
+    "Director": ("Company-wide visibility and approvals", [p for p in ALL if not p.startswith(("roles:", "users:delete")) and p not in _NOTIF_ADMIN]),
     "Department Manager": ("Manages a department's people and tasks", _MANAGER),
     "Tender Manager": ("Owns tender pipeline (Phase 2)", _MANAGER),
     "Project Manager": ("Owns project execution (Phase 3)", _MANAGER),
