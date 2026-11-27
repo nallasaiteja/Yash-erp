@@ -251,6 +251,7 @@ class LeaveOut(ORM):
     days: int = 0
     reason: str | None
     status: str
+    decided_by: UserBrief | None = None
     decided_at: datetime | None
     decision_note: str | None
     created_at: datetime

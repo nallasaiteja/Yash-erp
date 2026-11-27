@@ -52,6 +52,16 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => setOpen(false), [path]);
   useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  useEffect(() => {
     if (!user || (!can("notifications:view") && !can("notifications:create"))) return;
     let alive = true;
     const load = () => get<{ count: number }>("/api/notifications/unread-count").then((r) => alive && setUnread(r.count)).catch(() => {});
@@ -147,14 +157,22 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 bg-[#142D4E]/45 backdrop-blur-[2px]" />
-          <aside className="absolute inset-y-0 left-0 w-64 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <aside className="relative flex h-full w-64 max-w-[85vw] flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="absolute right-3 top-3.5 z-10 rounded-lg p-1.5 text-blue-100 hover:bg-side-hover hover:text-white"
+              aria-label="Close menu"
+            >
+              <X className="size-4" />
+            </button>
             {renderSidebar(false)}
           </aside>
         </div>
       )}
 
       <div className={cx("flex min-w-0 flex-1 flex-col transition-all duration-200", collapsed ? "lg:pl-[72px]" : "lg:pl-64")}>
-        <header className="sticky top-0 z-20 flex h-15 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur-md sm:px-6">
+        <header className="sticky top-0 z-20 flex h-15 items-center gap-2 border-b border-line bg-surface/95 px-3 backdrop-blur-md sm:gap-3 sm:px-6">
           <button
             className="rounded-lg p-2 text-muted transition hover:bg-surface-2 hover:text-ink lg:hidden"
             onClick={() => setOpen(true)}
@@ -163,10 +181,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <Menu className="size-5" />
           </button>
 
-          <div className="hidden items-center gap-2 text-sm sm:flex">
-            <span className="font-medium text-muted">Workspace</span>
-            <span className="text-line-strong">/</span>
-            <span className="font-semibold text-ink">{currentItem?.label ?? "Merugu Global"}</span>
+          <div className="flex min-w-0 items-center gap-2 text-sm">
+            <span className="hidden font-medium text-muted sm:inline">Workspace</span>
+            <span className="hidden text-line-strong sm:inline">/</span>
+            <span className="truncate font-semibold text-ink">{currentItem?.label ?? "Merugu Global"}</span>
           </div>
 
           <div className="flex-1" />

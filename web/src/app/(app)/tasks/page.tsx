@@ -77,21 +77,21 @@ export default function TasksPage() {
       <PageHeader title="Tasks" subtitle="Assign, track and close out office work" actions={can("tasks:create") && <Button onClick={() => open("new")}><Plus className="size-4" /> New task</Button>} />
       <Card>
         <div className="flex flex-wrap items-center gap-2 border-b border-line p-3">
-          <div className="flex rounded-md border border-line p-0.5 text-sm" role="tablist">
+          <div className="tab-strip w-full rounded-lg border border-line bg-surface p-0.5 text-sm sm:w-auto" role="tablist">
             {([["mine", "Assigned to me"], ["created", "Created by me"], ...(can("tasks:view") ? [["all", "All tasks"]] : [])] as [typeof scope, string][]).map(([k, label]) => (
-              <button key={k} role="tab" aria-selected={scope === k} onClick={() => { setScope(k); setPage(1); }} className={`rounded px-3 py-1.5 ${scope === k ? "bg-brand text-brand-fg" : "text-muted hover:text-ink"}`}>{label}</button>
+              <button key={k} role="tab" aria-selected={scope === k} onClick={() => { setScope(k); setPage(1); }} className={`shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 font-medium transition ${scope === k ? "bg-brand text-brand-fg" : "text-muted hover:text-ink"}`}>{label}</button>
             ))}
           </div>
-          <div className="relative min-w-[180px] flex-1">
+          <div className="relative w-full sm:min-w-[180px] sm:flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
             <Input className="pl-9" placeholder="Search tasks" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
           </div>
-          <Select className="w-auto" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Status">
+          <Select className="w-full sm:w-auto" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Status">
             <option value="open">Open</option>
             <option value="">Any status</option>
             {STATUSES.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
           </Select>
-          <Select className="w-auto" value={priority} onChange={(e) => { setPriority(e.target.value); setPage(1); }} aria-label="Priority">
+          <Select className="w-full sm:w-auto" value={priority} onChange={(e) => { setPriority(e.target.value); setPage(1); }} aria-label="Priority">
             <option value="">Any priority</option>
             {["urgent", "high", "medium", "low"].map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
@@ -126,7 +126,7 @@ export default function TasksPage() {
           <fieldset disabled={limited} className="space-y-4">
             <Field label="Title *"><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
             <Field label="Description"><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Assignee">
                 <Select value={form.assignee_id} onChange={(e) => setForm({ ...form, assignee_id: e.target.value })}>
                   <option value="">Unassigned</option>

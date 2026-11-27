@@ -173,7 +173,7 @@ export default function NotificationsPage() {
       />
 
       {canManage && (
-        <div className="mb-3 flex gap-1 border-b border-line" role="tablist">
+        <div className="tab-strip mb-3 border-b border-line" role="tablist">
           {([
             ["manage", "All sent / Manage"],
             ["inbox", "My inbox"],
@@ -183,7 +183,7 @@ export default function NotificationsPage() {
               role="tab"
               aria-selected={tab === key}
               onClick={() => { setTab(key); setPage(1); }}
-              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === key ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}
+              className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${tab === key ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}
             >
               {label}
             </button>

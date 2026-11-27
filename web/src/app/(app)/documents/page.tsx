@@ -97,17 +97,17 @@ export default function DocumentsPage() {
         subtitle="Central repository for tender files, contracts, drawings, HR and project documents"
         actions={can("documents:create") && <Button onClick={() => setUpload({ file: null, title: "", category: "general", tags: "", description: "", employee_id: "" })}><Upload className="size-4" /> Upload</Button>}
       />
-      <Card>
-        <div className="flex flex-wrap gap-2 border-b border-line p-3">
-          <div className="relative min-w-[200px] flex-1">
+      <Card className="overflow-hidden">
+        <div className="flex flex-wrap gap-2.5 border-b border-line bg-surface-2/50 p-3.5">
+          <div className="relative w-full sm:min-w-[200px] sm:flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
             <Input className="pl-9" placeholder="Search title, file name, description" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
           </div>
-          <Select className="w-auto" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} aria-label="Category">
+          <Select className="w-full sm:w-auto" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} aria-label="Category">
             <option value="">All categories</option>
             {cats.data?.map((c) => <option key={c} value={c}>{c}</option>)}
           </Select>
-          <Input className="w-40" placeholder="Tag" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} />
+          <Input className="w-full sm:w-40" placeholder="Tag" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} />
         </div>
         <Table head={["Document", "Category", "Tags", "Size", "Uploaded by", "Date", ""]} loading={list.loading && !list.data} error={list.error} onRetry={list.reload} empty={list.data?.items.length === 0}>
           {list.data?.items.map((d) => (
@@ -151,7 +151,7 @@ export default function DocumentsPage() {
               <input ref={fileRef} type="file" accept={ACCEPT} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUpload({ ...upload, file: f, title: upload.title || f.name.replace(/\.[^.]+$/, "") }); }} />
             </div>
             <Field label="Title"><Input value={upload.title} onChange={(e) => setUpload({ ...upload, title: e.target.value })} /></Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Category">
                 <Select value={upload.category} onChange={(e) => setUpload({ ...upload, category: e.target.value })}>
                   {cats.data?.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -192,7 +192,7 @@ export default function DocumentsPage() {
             )}
             <fieldset disabled={!can("documents:edit")} className="space-y-4">
               <Field label="Title"><Input required value={meta.title} onChange={(e) => setMeta({ ...meta, title: e.target.value })} /></Field>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Category">
                   <Select value={meta.category} onChange={(e) => setMeta({ ...meta, category: e.target.value })}>
                     {cats.data?.map((c) => <option key={c} value={c}>{c}</option>)}

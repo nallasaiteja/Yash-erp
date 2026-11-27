@@ -74,9 +74,9 @@ export function Card({ children, className }: { children: React.ReactNode; class
 }
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
+        <h1 className="text-[clamp(1.25rem,1.1rem+0.75vw,1.5rem)] font-semibold tracking-tight text-ink">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -119,24 +119,24 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#142D4E]/45 p-4 backdrop-blur-[2px]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#142D4E]/45 p-2.5 backdrop-blur-[2px] sm:p-4" onMouseDown={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onMouseDown={(e) => e.stopPropagation()}
         className={cx(
-          "animate-modal-in flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-line bg-surface shadow-[var(--shadow-lg)]",
+          "animate-modal-in flex max-h-[calc(100dvh-1.25rem)] w-full flex-col rounded-xl border border-line bg-surface shadow-[var(--shadow-lg)] sm:max-h-[calc(100dvh-2rem)]",
           wide ? "max-w-3xl" : "max-w-lg",
         )}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-line px-6 py-4">
-          <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-4 py-3.5 sm:px-6 sm:py-4">
+          <h2 className="truncate text-base font-semibold tracking-tight text-ink">{title}</h2>
           <button onClick={onClose} className="rounded-lg p-1.5 text-muted transition hover:bg-surface-2 hover:text-ink" aria-label="Close">
             <X className="size-4" />
           </button>
         </div>
-        <div className="overflow-y-auto p-6">{children}</div>
+        <div className="overflow-y-auto p-4 sm:p-6">{children}</div>
       </div>
     </div>
   );
@@ -175,7 +175,7 @@ export function Table({
   head: React.ReactNode[]; children: React.ReactNode; empty?: boolean; loading?: boolean; error?: string | null; onRetry?: () => void;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted">

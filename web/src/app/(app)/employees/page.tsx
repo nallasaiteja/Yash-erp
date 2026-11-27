@@ -116,15 +116,15 @@ export default function EmployeesPage() {
       />
       <Card className="overflow-hidden">
         <div className="flex flex-wrap gap-2.5 border-b border-line bg-surface-2/35 p-3.5">
-          <div className="relative min-w-[200px] flex-1">
+          <div className="relative w-full sm:min-w-[200px] sm:flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
             <Input className="pl-9" placeholder="Search name, code, email, designation" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
           </div>
-          <Select className="w-auto" value={dept} onChange={(e) => { setDept(e.target.value); setPage(1); }} aria-label="Department">
+          <Select className="w-full sm:w-auto" value={dept} onChange={(e) => { setDept(e.target.value); setPage(1); }} aria-label="Department">
             <option value="">All departments</option>
             {depts.data?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </Select>
-          <Select className="w-auto" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Status">
+          <Select className="w-full sm:w-auto" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Status">
             <option value="">Any status</option>
             {["onboarding", "active", "on_notice", "exited"].map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
           </Select>

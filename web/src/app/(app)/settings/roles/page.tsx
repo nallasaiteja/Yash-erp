@@ -101,17 +101,26 @@ export default function RolesPage() {
       <PageHeader title="Roles & Permissions" subtitle="Control what each role can view, create, edit, delete, approve, download and export" actions={editable && <Button onClick={() => setCreating(true)}><Plus className="size-4" /> New role</Button>} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         <Card className="h-fit p-2">
-          {roles.data?.map((r) => (
-            <button key={r.id} onClick={() => setSel(r.id)} className={cx("flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm", sel === r.id ? "bg-brand-soft font-medium" : "hover:bg-surface-2")}>
-              <span>{r.name}</span>
-              <span className="text-xs text-muted">{r.user_count}</span>
-            </button>
-          ))}
+          <div className="tab-strip lg:block lg:space-y-0.5">
+            {roles.data?.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setSel(r.id)}
+                className={cx(
+                  "flex shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition lg:w-full",
+                  sel === r.id ? "bg-brand-soft font-semibold text-brand" : "text-body hover:bg-surface-2 hover:text-ink",
+                )}
+              >
+                <span>{r.name}</span>
+                <span className="text-xs text-muted">{r.user_count}</span>
+              </button>
+            ))}
+          </div>
         </Card>
         {role && (
-          <Card className="min-w-0">
+          <Card className="min-w-0 overflow-hidden">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line p-4">
-              <div className="min-w-[240px] flex-1">
+              <div className="min-w-0 flex-1 basis-60">
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold">{role.name}</h2>
                   {role.is_system && <Badge>built-in</Badge>}

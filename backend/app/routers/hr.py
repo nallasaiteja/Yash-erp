@@ -352,12 +352,34 @@ def _leave_out(l: LeaveRequest) -> LeaveOut:
     return o
 
 
+@router.get("/leave/summary")
+def leave_summary(user: User = Depends(require("leave:view")), db: Session = Depends(get_db)):
+    pending_count = db.scalar(select(func.count()).select_from(LeaveRequest).where(LeaveRequest.status == "pending")) or 0
+    approved_count = db.scalar(select(func.count()).select_from(LeaveRequest).where(LeaveRequest.status == "approved")) or 0
+    my_approved = db.scalars(
+        select(LeaveRequest).where(LeaveRequest.status == "approved", LeaveRequest.decided_by_id == user.id)
+    ).all()
+    approved_by_me_days = sum((l.end_date - l.start_date).days + 1 for l in my_approved)
+    rejected_by_me_count = db.scalar(
+        select(func.count()).select_from(LeaveRequest).where(LeaveRequest.status == "rejected", LeaveRequest.decided_by_id == user.id)
+    ) or 0
+    return {
+        "pending_count": pending_count,
+        "approved_count": approved_count,
+        "approved_by_me_count": len(my_approved),
+        "approved_by_me_days": approved_by_me_days,
+        "rejected_by_me_count": rejected_by_me_count,
+    }
+
+
 @router.get("/leave", response_model=Page[LeaveOut])
-def list_leave(status: str | None = None, mine: bool = False, page: int = Query(1, ge=1),
-               size: int = Query(50, ge=1, le=200), user: User = Depends(get_current_user),
-               db: Session = Depends(get_db)):
+def list_leave(status: str | None = None, mine: bool = False, decided_by_me: bool = False,
+               page: int = Query(1, ge=1), size: int = Query(50, ge=1, le=200),
+               user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     stmt = select(LeaveRequest)
-    if mine or not has(user, "leave:view"):
+    if decided_by_me and has(user, "leave:approve"):
+        stmt = stmt.where(LeaveRequest.decided_by_id == user.id)
+    elif mine or not has(user, "leave:view"):
         emp = my_employee(db, user)
         stmt = stmt.where(LeaveRequest.employee_id == (emp.id if emp else -1))
     if status:

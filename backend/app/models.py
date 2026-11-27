@@ -129,6 +129,7 @@ class LeaveRequest(TimestampMixin, Base):
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     decision_note: Mapped[str | None] = mapped_column(String(255))
     employee: Mapped[Employee] = relationship(lazy="joined")
+    decided_by: Mapped[User | None] = relationship(foreign_keys=[decided_by_id], lazy="joined")
 
 
 class Task(TimestampMixin, Base):

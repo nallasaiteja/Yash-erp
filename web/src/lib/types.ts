@@ -86,6 +86,7 @@ export type Leave = {
   days: number;
   reason: string | null;
   status: string;
+  decided_by?: UserBrief | null;
   decided_at: string | null;
   decision_note: string | null;
   created_at: string;

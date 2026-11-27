@@ -14,9 +14,9 @@ export default function AuditPage() {
   return (
     <>
       <PageHeader title="Audit Log" subtitle="Who did what, and when. Entries cannot be edited." />
-      <Card>
-        <div className="border-b border-line p-3">
-          <Select className="w-auto" value={entity} onChange={(e) => { setEntity(e.target.value); setPage(1); }} aria-label="Entity">
+      <Card className="overflow-hidden">
+        <div className="border-b border-line bg-surface-2/50 p-3.5">
+          <Select className="w-full sm:w-auto" value={entity} onChange={(e) => { setEntity(e.target.value); setPage(1); }} aria-label="Entity">
             <option value="">All areas</option>
             {ENTITIES.map((e) => <option key={e} value={e}>{e}</option>)}
           </Select>

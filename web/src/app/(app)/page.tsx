@@ -141,12 +141,12 @@ export default function Dashboard() {
       {(d?.attendance_trend || d?.headcount_by_department) && (
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           {d.attendance_trend && (
-            <Card className="p-5">
+            <Card className="min-w-0 p-4 sm:p-5">
               <div className="mb-4">
                 <h2 className="text-sm font-semibold text-ink">Attendance trend</h2>
                 <p className="text-xs text-muted">Daily present employees over the last 14 days</p>
               </div>
-              <div className="h-60">
+              <div className="h-56 sm:h-60">
                 <ResponsiveContainer>
                   <AreaChart data={d.attendance_trend} margin={{ left: -20, right: 8, top: 8 }}>
                     <defs>
@@ -169,17 +169,17 @@ export default function Dashboard() {
             </Card>
           )}
           {d.headcount_by_department && (
-            <Card className="p-5">
+            <Card className="min-w-0 p-4 sm:p-5">
               <div className="mb-4">
                 <h2 className="text-sm font-semibold text-ink">Headcount by department</h2>
                 <p className="text-xs text-muted">Active team distribution across departments</p>
               </div>
-              <div className="h-60">
+              <div className="h-56 sm:h-60">
                 <ResponsiveContainer>
-                  <BarChart data={[...d.headcount_by_department].sort((a, b) => b.count - a.count)} layout="vertical" margin={{ left: 8, right: 16 }}>
+                  <BarChart data={[...d.headcount_by_department].sort((a, b) => b.count - a.count)} layout="vertical" margin={{ left: 4, right: 16 }}>
                     <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={axis} stroke="var(--line)" tickLine={false} />
-                    <YAxis type="category" dataKey="department" width={140} tick={axis} stroke="var(--line)" tickLine={false} axisLine={false} />
+                    <YAxis type="category" dataKey="department" width={108} tick={axis} stroke="var(--line)" tickLine={false} axisLine={false} tickFormatter={(v: string) => (v.length > 14 ? `${v.slice(0, 13)}…` : v)} />
                     <Tooltip
                       cursor={{ fill: "var(--surface-2)" }}
                       contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 10, fontSize: 12, boxShadow: "var(--shadow-md)" }}

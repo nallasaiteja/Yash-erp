@@ -80,9 +80,9 @@ export default function AttendancePage() {
       <div className="mb-4 grid gap-4 md:grid-cols-3"><CheckInCard onChange={log.reload} /></div>
 
       {isHR && (
-        <div className="mb-3 flex gap-1 border-b border-line" role="tablist">
+        <div className="tab-strip mb-3 border-b border-line" role="tablist">
           {(["log", "report"] as const).map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === t ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}>
+            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${tab === t ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}>
               {t === "log" ? "Daily log" : "Monthly report"}
             </button>
           ))}
@@ -182,7 +182,7 @@ export default function AttendancePage() {
                 {emps.data?.map((x) => <option key={x.id} value={x.id}>{x.full_name} ({x.employee_code})</option>)}
               </Select>
             </Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Date *"><Input type="date" required value={manual.work_date} onChange={(e) => setManual({ ...manual, work_date: e.target.value })} /></Field>
               <Field label="Status *">
                 <Select value={manual.status} onChange={(e) => setManual({ ...manual, status: e.target.value })}>

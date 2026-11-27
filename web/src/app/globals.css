@@ -67,6 +67,7 @@
 @layer base {
   html {
     color-scheme: light;
+    overflow-x: clip;
   }
 
   html, body {
@@ -76,11 +77,25 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+    max-width: 100%;
   }
 
   h1, h2, h3, h4 {
     color: var(--ink);
   }
+}
+
+/* Responsive tab strip helper (smooth horizontal scroll on small phones) */
+.tab-strip {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tab-strip::-webkit-scrollbar {
+  display: none;
 }
 
 :focus-visible {
